@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"go.opentelemetry.io/otel/sdk/trace"
 	"os"
 
 	"ghost/internal/conf"
@@ -26,10 +27,11 @@ var (
 )
 
 func init() {
+	Name = "orders"
 	flag.StringVar(&flagconf, "conf", "../../configs", "config path, eg: -conf config.yaml")
 }
 
-func newApp(logger log.Logger, hs *http.Server, gs *grpc.Server) *kratos.App {
+func newApp(logger log.Logger, hs *http.Server, gs *grpc.Server, provider *trace.TracerProvider) *kratos.App {
 	return kratos.New(
 		kratos.ID(id),
 		kratos.Name(Name),
@@ -68,7 +70,7 @@ func main() {
 		panic(err)
 	}
 
-	app, cleanup, err := initApp(bc.Server, bc.Data, logger)
+	app, cleanup, err := initApp(bc.Server, bc.Data, logger, Name)
 	if err != nil {
 		panic(err)
 	}
