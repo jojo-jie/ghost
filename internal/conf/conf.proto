@@ -24,6 +24,7 @@ message Server {
   HTTP http = 1;
   GRPC grpc = 2;
   string jaeger_url = 3;
+  string name = 4;
 }
 
 message Data {

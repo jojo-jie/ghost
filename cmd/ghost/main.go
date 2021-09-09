@@ -27,7 +27,6 @@ var (
 )
 
 func init() {
-	Name = "orders"
 	flag.StringVar(&flagconf, "conf", "../../configs", "config path, eg: -conf config.yaml")
 }
 
@@ -47,6 +46,20 @@ func newApp(logger log.Logger, hs *http.Server, gs *grpc.Server, provider *trace
 
 func main() {
 	flag.Parse()
+	c := config.New(
+		config.WithSource(
+			file.NewSource(flagconf),
+		),
+	)
+	if err := c.Load(); err != nil {
+		panic(err)
+	}
+	var bc conf.Bootstrap
+	if err := c.Scan(&bc); err != nil {
+		panic(err)
+	}
+
+	Name = bc.GetServer().GetName()
 	logger := log.With(log.NewStdLogger(os.Stdout),
 		"ts", log.DefaultTimestamp,
 		"caller", log.DefaultCaller,
@@ -56,19 +69,6 @@ func main() {
 		"trace_id", log.TraceID(),
 		"span_id", log.SpanID(),
 	)
-	c := config.New(
-		config.WithSource(
-			file.NewSource(flagconf),
-		),
-	)
-	if err := c.Load(); err != nil {
-		panic(err)
-	}
-
-	var bc conf.Bootstrap
-	if err := c.Scan(&bc); err != nil {
-		panic(err)
-	}
 
 	app, cleanup, err := initApp(bc.Server, bc.Data, logger, Name)
 	if err != nil {
