@@ -2,6 +2,10 @@ package service
 
 import (
 	"context"
+	"encoding/json"
+	"errors"
+	"gorm.io/gorm"
+	"strconv"
 
 	v1 "ghost/api/helloworld/v1"
 	"ghost/internal/biz"
@@ -23,10 +27,32 @@ func NewGreeterService(uc *biz.GreeterUsecase, logger log.Logger) *GreeterServic
 
 // SayHello implements helloworld.GreeterServer
 func (s *GreeterService) SayHello(ctx context.Context, in *v1.HelloRequest) (*v1.HelloReply, error) {
-	s.log.WithContext(ctx).Infof("SayHello Received: %v", in.GetName())
-
-	if in.GetName() == "error" {
-		return nil, v1.ErrorUserNotFound("user not found: %s", in.GetName())
+	s.log.WithContext(ctx).Infof("SayHello Received: %v", in.GetUserId())
+	userId, err := strconv.Atoi(in.GetUserId())
+	if err != nil {
+		return nil, v1.ErrorContentMissing("搞啥呢 %s", err)
 	}
-	return &v1.HelloReply{Message: "Hello " + in.GetName()}, nil
+	data, err := s.uc.Show(ctx, &biz.Greeter{UserId: userId})
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, v1.ErrorContentMissing("啥也没有 %s", err)
+	}
+
+	var d biz.UserInfo
+	err = json.Unmarshal([]byte(data.UserInfo), &d)
+	if err != nil {
+		return nil, v1.ErrorContentMissing("失败 %s", err)
+	}
+	return &v1.HelloReply{
+		UserId:   int32(data.UserId),
+		Nickname: data.Nickname,
+		Account:  data.Account,
+		UserInfo: &v1.UserInfo{
+			Cid:     d.Cid,
+			Num:     d.Num,
+			Oid:     d.Oid,
+			Price:   d.Price,
+			Title:   d.Title,
+			EndTime: d.EndTime,
+		},
+	}, nil
 }

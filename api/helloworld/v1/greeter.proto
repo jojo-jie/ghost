@@ -13,18 +13,32 @@ option java_outer_classname = "HelloWorldProtoV1";
 service Greeter {
   // Sends a greeting
   rpc SayHello (HelloRequest) returns (HelloReply)  {
-        option (google.api.http) = {
-            get: "/helloworld/{name}"
-        };
-    }
+    option (google.api.http) = {
+      get: "/helloworld/{userId}"
+    };
+  }
 }
 
 // The request message containing the user's name.
 message HelloRequest {
-  string name = 1;
+  string user_id = 1;
 }
 
 // The response message containing the greetings
 message HelloReply {
-  string message = 1;
+  int32 user_id = 1;
+  string nickname = 2;
+  string account = 3;
+  UserInfo user_info = 4;
 }
+
+message UserInfo {
+  int64 cid = 1;
+  int64 num = 2;
+  string oid = 3;
+  string price = 4;
+  string title = 5;
+  string end_time = 6;
+}
+
+
