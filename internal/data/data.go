@@ -39,6 +39,7 @@ func NewData(c *conf.Data, logger log.Logger) (*Data, func(), error) {
 	sqlDb.SetConnMaxLifetime(time.Duration(int(c.Database.GetSetConnMaxLifetime().GetSeconds())))
 
 
+
 	rdb := redis.NewClient(&redis.Options{
 		Addr:     c.Redis.GetAddr(),
 		Password: "",
