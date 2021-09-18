@@ -29,6 +29,6 @@ func (r *greeterRepo) UpdateGreeter(ctx context.Context, g *biz.Greeter) error {
 
 func (r *greeterRepo) ShowGreeter(ctx context.Context, g *biz.Greeter) (*biz.Greeter, error) {
 	var order biz.Greeter
-	result:=r.data.Db.Table("greeter").Where("user_id = ?", g.UserId).First(&order)
+	result := r.data.Db.Model(g).Where("user_id = ?", g.UserId).First(&order)
 	return &order, result.Error
 }

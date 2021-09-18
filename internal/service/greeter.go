@@ -63,7 +63,7 @@ func (s *GreeterService) SayHello(ctx context.Context, in *v1.HelloRequest) (*v1
 }
 
 func db(ctx context.Context)  {
-	tracer := otel.Tracer("mongodb")
+	tracer := otel.Tracer("mysql")
 	kind := trace.SpanKindServer
 	duration, _ := time.ParseDuration("100ns")
 	ctx, span := tracer.Start(ctx,
@@ -77,6 +77,8 @@ func db(ctx context.Context)  {
 		),
 		trace.WithSpanKind(kind),
 	)
-	span.SetStatus(400, "有毒了!!!")
+
+	span.SetAttributes(attribute.Bool("error", true))
+	span.SetStatus(500, "有毒了!!!")
 	span.End()
 }

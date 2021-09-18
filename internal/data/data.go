@@ -38,6 +38,8 @@ func NewData(c *conf.Data, logger log.Logger) (*Data, func(), error) {
 	sqlDb.SetMaxOpenConns(int(c.Database.GetSetMaxOpenConns()))
 	sqlDb.SetConnMaxLifetime(time.Duration(int(c.Database.GetSetConnMaxLifetime().GetSeconds())))
 
+	// callback
+	db.Callback().Query().After("gorm:query").Register("gorm:operating_time", updateTimeStampForCreateCallback)
 
 
 	rdb := redis.NewClient(&redis.Options{
@@ -55,4 +57,16 @@ func NewData(c *conf.Data, logger log.Logger) (*Data, func(), error) {
 		Db:  db,
 		Rdb: rdb,
 	}, cleanup, nil
+}
+
+func updateTimeStampForCreateCallback(db *gorm.DB)  {
+	fmt.Println(db.Statement.Schema)
+	if db.Statement.Schema!=nil {
+		location, _ := time.LoadLocation("Asia/Shanghai")
+		nowTime:=time.Now().In(location).Format("2006-01-02 15:04:05")
+		field:=db.Statement.Schema.LookUpField("operating_time")
+		if field != nil {
+			db.Statement.Update("operating_time", nowTime)
+		}
+	}
 }

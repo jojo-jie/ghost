@@ -6,15 +6,26 @@ import (
 )
 
 type Greeter struct {
-	UserId   int      `gorm:"primary_key" json:"user_id"`
-	Nickname string   `json:"third_shop_id"`
-	Account  string   `json:"third_orderid"`
-	UserInfo string `json:"full_order_json"`
+	UserId        int    `gorm:"primary_key" json:"user_id"`
+	Nickname      string `json:"third_shop_id"`
+	Account       string `json:"third_orderid"`
+	UserInfo      string `json:"full_order_json"`
+	OperatingTime string `json:"operating_time"`
 }
 
+func (Greeter) TableName() string {
+	return "greeter"
+}
+
+/*func (g *Greeter) AfterFind(tx *gorm.DB) error {
+	location, err := time.LoadLocation("Asia/Shanghai")
+	tx.Model(g).Update("operating_time", time.Now().In(location).Format("2006-01-02 15:04:05"))
+	return err
+}*/
+
 type UserInfo struct {
-	Cid     int64    `json:"cid"`
-	Num     int64    `json:"num"`
+	Cid     int64  `json:"cid"`
+	Num     int64  `json:"num"`
 	Oid     string `json:"oid"`
 	Price   string `json:"price"`
 	Title   string `json:"title"`
