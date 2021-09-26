@@ -7,6 +7,7 @@ import (
 	v1 "ghost/api/helloworld/v1"
 	"ghost/internal/biz"
 	"github.com/go-kratos/kratos/v2/log"
+	"google.golang.org/grpc/metadata"
 	"gorm.io/gorm"
 	"strconv"
 )
@@ -27,6 +28,9 @@ func NewGreeterService(uc *biz.GreeterUsecase, logger log.Logger) *GreeterServic
 // SayHello implements helloworld.GreeterServer
 func (s *GreeterService) SayHello(ctx context.Context, in *v1.HelloRequest) (*v1.HelloReply, error) {
 	s.log.WithContext(ctx).Infof("SayHello Received: %v", in.GetUserId())
+	md,_:=metadata.FromIncomingContext(ctx)
+	strings := md["orders"]
+	s.log.WithContext(ctx).Infof("SayHello Received Md: %v", strings)
 	userId, err := strconv.Atoi(in.GetUserId())
 	if err != nil {
 		return nil, v1.ErrorContentMissing("搞啥呢 %s", err)

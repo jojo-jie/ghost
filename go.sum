@@ -77,8 +77,6 @@ github.com/jinzhu/inflection v1.0.0 h1:K317FqzuhWc8YvSVlFMCCUb36O/S9MCKRDI7QkRKD
 github.com/jinzhu/inflection v1.0.0/go.mod h1:h+uFLlag+Qp1Va5pdKtLDYj+kHp5pxUVkryuEj+Srlc=
 github.com/jinzhu/now v1.1.2 h1:eVKgfIdy9b6zbWBMgFpfDPoAMifwSZagU9HmEU6zgiI=
 github.com/jinzhu/now v1.1.2/go.mod h1:d3SSVoowX0Lcu0IBviAWJpolVfI5UJVZZ7cO71lE/z8=
-github.com/jojo-jie/otelgorm v0.0.0-20210924025337-eda1ca459310 h1:dtXqpsShdUwUkmkXi9Essh0O7vajyW0lyRfAAptYPpY=
-github.com/jojo-jie/otelgorm v0.0.0-20210924025337-eda1ca459310/go.mod h1:fsZo/H933I6Dg9JJmTQ1gLnE89HePY3L8ut3J76Tns8=
 github.com/jojo-jie/otelgorm v0.0.0-20210924091245-7049bd429917 h1:LN6fK2BAoL5pRXjGMyv5mjFNCCJdt0+lLnlrrSBMfW8=
 github.com/jojo-jie/otelgorm v0.0.0-20210924091245-7049bd429917/go.mod h1:fsZo/H933I6Dg9JJmTQ1gLnE89HePY3L8ut3J76Tns8=
 github.com/kr/pty v1.1.1/go.mod h1:pFQYn66WHrOpPYNljwOMqo10TkYh1fy3cYio2l3bCsQ=
