@@ -32,6 +32,7 @@ func InitGlobalTracer(c *conf.Server, greeter *service.GreeterService, logger lo
 		tracesdk.WithResource(resource.NewWithAttributes(
 			semconv.SchemaURL,
 			semconv.ServiceNameKey.String(name),
+
 			semconv.ServiceVersionKey.String("v0.11"),
 			semconv.HostNameKey.String("hostname1"),
 			attribute.String("environment", "dev"),
