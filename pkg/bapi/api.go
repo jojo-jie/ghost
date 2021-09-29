@@ -5,12 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 	v1 "ghost/api/helloworld/v1"
+	"ghost/pkg/track"
 	"go.opentelemetry.io/otel"
-	semconv "go.opentelemetry.io/otel/semconv/v1.4.0"
-	"go.opentelemetry.io/otel/trace"
 	"io"
 	"net/http"
-	"strings"
 	"time"
 )
 
@@ -53,21 +51,9 @@ func (a *Api) httpGet(ctx context.Context, path string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	//https://www.jaegertracing.io/docs/1.18/client-libraries/#tracespan-identity
-	//跨应用http uber-trace-id
-	tracer := otel.Tracer("")
-	newCtx,span:=tracer.Start(ctx, "HTTP GET: "+a.Url)
-	span.SetAttributes(semconv.ServiceNameKey.String(path))
-	defer span.End()
+	newCtx,finish:=track.Start(ctx, otel.Tracer(""), "HTTP GET: "+a.Url)
+	finish(track.SetAttributes(path), track.InjectHttp(ctx, req))
 	req = req.WithContext(newCtx)
-	uberTraceId:=make([]string, 4,4)
-	uberTraceId[0] = span.SpanContext().TraceID().String()
-	uberTraceId[1] = span.SpanContext().SpanID().String()
-	uberTraceId[2] = trace.SpanContextFromContext(ctx).SpanID().String()
-	uberTraceId[3] = "1"
-
-	req.Header.Set("uber-trace-id", strings.Join(uberTraceId, ":"))
 	client := &http.Client{Timeout: time.Millisecond * 300}
 	resp, err := client.Do(req)
 	if err != nil {
