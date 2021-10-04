@@ -25,6 +25,7 @@ func New(endpoint, name string) (*tracesdk.TracerProvider, error) {
 		// Set the sampling rate based on the parent span to 100%
 		tracesdk.WithSampler(tracesdk.AlwaysSample()),
 		// Always be sure to batch in production.
+		// time range 5000 msec tracesdk.WithBatchTimeout()
 		tracesdk.WithBatcher(exp),
 		// Record information about this application in a Resource.
 		tracesdk.WithResource(resource.NewWithAttributes(
@@ -33,10 +34,9 @@ func New(endpoint, name string) (*tracesdk.TracerProvider, error) {
 
 			semconv.ServiceVersionKey.String("v0.11"),
 			semconv.HostNameKey.String("hostname1"),
+			semconv.NetHostIPKey.String("192.168.1.34"),
 			attribute.String("environment", "dev"),
-			attribute.Int64("ID", 1),
 			attribute.String("exporter", "jaeger"),
-			attribute.Float64("float", 312.23),
 		)),
 	)
 	otel.SetTracerProvider(tp)
