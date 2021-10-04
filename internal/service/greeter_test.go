@@ -7,35 +7,39 @@ import (
 	"github.com/go-kratos/kratos/v2/middleware"
 	"github.com/go-kratos/kratos/v2/middleware/tracing"
 	"github.com/go-kratos/kratos/v2/transport/grpc"
-	ggrpc "google.golang.org/grpc"
 	"google.golang.org/grpc/metadata"
 	"testing"
 )
 
 func TestRpcClient(t *testing.T) {
-	/*md := metadata.Pairs(
+	md := metadata.Pairs(
 		"orders", "client_test",
-		"ghost", "v1.1.0",
+		"orders", "v1.1.0",
 		"orders", "sql",
-	)*/
+	)
+	newCtx:= metadata.NewOutgoingContext(context.Background(), md)
+	_, err := track.New("http://localhost:14268/api/traces", "stocks")
+	if err != nil {
+		return
+	}
 
-	newCtx := metadata.AppendToOutgoingContext(context.Background(), "orders", "client_test", "ghost", "v1.1.0", "orders", "sql")
-	track.New("http://localhost:14268/api/traces", "stocks")
 	opts := make([]grpc.ClientOption, 0, 5)
 	opts = append(opts, grpc.WithEndpoint(":6677"),
 		grpc.WithMiddleware(middleware.Chain(
-		tracing.Client(),
-	)), grpc.WithOptions(ggrpc.WithInsecure(), ggrpc.WithBlock()))
+			tracing.Client(),
+		)))
 	conn, err := grpc.DialInsecure(newCtx, opts...)
 
 	if err != nil {
 		t.Errorf("%+v", err)
 	}
-	reply, err := v1.NewGreeterClient(conn).SayHello(newCtx, &v1.HelloRequest{
+	client := v1.NewGreeterClient(conn)
+	reply, err := client.SayHello(newCtx, &v1.HelloRequest{
 		UserId: "479870",
 	})
 	if err != nil {
 		t.Error(err)
 	}
+	defer track.End(newCtx)
 	t.Log(reply.UserInfo.Price)
 }
