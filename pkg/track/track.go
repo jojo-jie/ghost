@@ -53,7 +53,7 @@ func InjectHttp(ctx context.Context, req *http.Request) SpanOption {
 		uberTraceId[2] = trace.SpanContextFromContext(ctx).SpanID().String()
 		uberTraceId[3] = "1"
 		//https://www.jaegertracing.io/docs/1.18/client-libraries/#tracespan-identity
-		//跨应用http uber-trace-id
+		//跨应用http uber-trace-id 兼容 opentracing-go 处理
 		req.Header.Set("uber-trace-id", strings.Join(uberTraceId, ":"))
 	}
 }

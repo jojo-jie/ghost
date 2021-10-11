@@ -34,8 +34,9 @@ func initApp(confServer *conf.Server, confData *conf.Data, logger log.Logger, st
 		cleanup()
 		return nil, nil, err
 	}
-	app := newApp(logger, httpServer, grpcServer, tracerProvider)
+	app, cleanup2 := newApp(logger, httpServer, grpcServer, tracerProvider)
 	return app, func() {
+		cleanup2()
 		cleanup()
 	}, nil
 }

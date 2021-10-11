@@ -3,15 +3,19 @@ package main
 import (
 	"flag"
 	"go.opentelemetry.io/otel/sdk/trace"
+	grpc2 "google.golang.org/grpc"
 	"os"
+	"time"
 
 	"ghost/internal/conf"
+	"github.com/go-kratos/etcd/registry"
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/config"
 	"github.com/go-kratos/kratos/v2/config/file"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/transport/grpc"
 	"github.com/go-kratos/kratos/v2/transport/http"
+	clientv3 "go.etcd.io/etcd/client/v3"
 )
 
 // go build -ldflags "-X main.Version=x.y.z"
@@ -30,7 +34,18 @@ func init() {
 	flag.StringVar(&flagconf, "conf", "../../configs", "config path, eg: -conf config.yaml")
 }
 
-func newApp(logger log.Logger, hs *http.Server, gs *grpc.Server, provider *trace.TracerProvider) *kratos.App {
+func newApp(logger log.Logger, hs *http.Server, gs *grpc.Server, provider *trace.TracerProvider) (*kratos.App, func()) {
+	client, err := clientv3.New(clientv3.Config{
+		Endpoints:   []string{"127.0.0.1:2379"},
+		DialTimeout: time.Second,
+		DialOptions: []grpc2.DialOption{grpc2.WithBlock()},
+	})
+	if err != nil {
+		panic(err)
+	}
+	cleanup := func() {
+		client.Close()
+	}
 	return kratos.New(
 		kratos.ID(id),
 		kratos.Name(Name),
@@ -41,7 +56,8 @@ func newApp(logger log.Logger, hs *http.Server, gs *grpc.Server, provider *trace
 			hs,
 			gs,
 		),
-	)
+		kratos.Registrar(registry.New(client)),
+	), cleanup
 }
 
 func main() {
