@@ -7,6 +7,7 @@ require (
 	github.com/go-kratos/etcd v0.1.3 // indirect
 	github.com/go-kratos/kratos/v2 v2.0.5
 	github.com/go-redis/redis/v8 v8.11.3
+	github.com/golang-jwt/jwt/v4 v4.1.0 // indirect
 	github.com/google/wire v0.5.0
 	github.com/jojo-jie/otelgorm v0.0.0-20210924091245-7049bd429917
 	github.com/kr/text v0.2.0 // indirect

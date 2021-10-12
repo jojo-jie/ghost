@@ -1,11 +1,13 @@
 package server
 
 import (
+	"context"
 	v1 "ghost/api/helloworld/v1"
 	"ghost/internal/conf"
 	"ghost/internal/service"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/middleware"
+	"github.com/go-kratos/kratos/v2/middleware/logging"
 	"github.com/go-kratos/kratos/v2/middleware/recovery"
 	"github.com/go-kratos/kratos/v2/middleware/tracing"
 	"github.com/go-kratos/kratos/v2/transport/grpc"
@@ -16,8 +18,16 @@ func NewGRPCServer(c *conf.Server, greeter *service.GreeterService, logger log.L
 	var opts = []grpc.ServerOption{
 		grpc.Middleware(
 			middleware.Chain(
-				recovery.Recovery(),
+				recovery.Recovery(
+					// 设置中间件打印日志
+					recovery.WithLogger(log.DefaultLogger),
+					// 设置服务异常时可以使用自定义的 handler 进行处理，例如投递异常信息到 sentry。
+					recovery.WithHandler(func(ctx context.Context, req, err interface{}) error {
+						return nil
+					}),
+				),
 				tracing.Server(),
+				logging.Server(log.DefaultLogger),
 			),
 		),
 	}
