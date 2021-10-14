@@ -5,6 +5,9 @@ import (
 	v1 "ghost/api/helloworld/v1"
 	"ghost/internal/conf"
 	"ghost/internal/service"
+	"ghost/pkg/jwt"
+	jwtv4 "github.com/golang-jwt/jwt/v4"
+
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/middleware"
 	"github.com/go-kratos/kratos/v2/middleware/logging"
@@ -26,6 +29,9 @@ func NewHTTPServer(c *conf.Server, greeter *service.GreeterService, logger log.L
 				),
 				tracing.Server(),
 				logging.Server(log.DefaultLogger),
+				jwt.Server(func(token *jwtv4.Token) (interface{}, error) {
+					return []byte(c.JwtKey), nil
+				}),
 			),
 		),
 	}

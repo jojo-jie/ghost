@@ -1,5 +1,6 @@
 server:
   name: orders
+  jwt_key: testKey
   http:
     addr: 0.0.0.0:4466
     timeout: 1s
