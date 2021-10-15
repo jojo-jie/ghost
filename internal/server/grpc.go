@@ -31,7 +31,7 @@ func NewGRPCServer(c *conf.Server, greeter *service.GreeterService, logger log.L
 				tracing.Server(),
 				logging.Server(log.DefaultLogger),
 				jwt.Server(func(token *jwtv4.Token) (interface{}, error) {
-					return []byte(c.JwtKey), nil
+					return []byte(c.GetJwtKey()), nil
 				}),
 			),
 		),

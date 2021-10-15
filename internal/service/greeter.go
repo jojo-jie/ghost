@@ -48,12 +48,12 @@ func (s *GreeterService) SayHello(ctx context.Context, in *v1.HelloRequest) (*v1
 		return nil, err
 	}
 
-
 	var d biz.UserInfo
 	err = json.Unmarshal([]byte(data.UserInfo), &d)
 	if err != nil {
 		return nil, v1.ErrorContentMissing("失败 %s", err)
 	}
+
 
 	return &v1.HelloReply{
 		UserId:   int32(data.UserId),

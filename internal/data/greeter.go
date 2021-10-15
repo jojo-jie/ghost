@@ -28,6 +28,9 @@ func (r *greeterRepo) UpdateGreeter(ctx context.Context, g *biz.Greeter) error {
 	location, _ := time.LoadLocation("Asia/Shanghai")
 	nowTime := time.Now().In(location).Format("2006-01-02 15:04:05")
 	r.data.Db.Model(g).WithContext(ctx).Update("operating_time", nowTime)
+	if ok, _ := r.data.Rdb.SetNX(ctx, "lock", 1, 100*time.Second).Result(); ok {
+		r.data.Rdb.Incr(ctx, "many_req")
+	}
 	return nil
 }
 

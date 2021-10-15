@@ -9,6 +9,9 @@ import (
 	"github.com/go-kratos/kratos/v2/middleware"
 	"github.com/go-kratos/kratos/v2/middleware/tracing"
 	"github.com/go-kratos/kratos/v2/transport/grpc"
+	"github.com/go-kratos/kratos/v2/transport/http"
+	"io"
+	nhttp "net/http"
 
 	jwtv4 "github.com/golang-jwt/jwt/v4"
 	clientv3 "go.etcd.io/etcd/client/v3"
@@ -43,7 +46,7 @@ func TestRpcClient(t *testing.T) {
 	defer dis.Close()
 	endpoint := "discovery://microservices/orders"
 	opts := make([]grpc.ClientOption, 0, 3)
-	opts = append(opts, grpc.WithEndpoint(endpoint),grpc.WithDiscovery(registry.New(dis)),
+	opts = append(opts, grpc.WithEndpoint(endpoint), grpc.WithDiscovery(registry.New(dis)),
 		grpc.WithMiddleware(middleware.Chain(
 			tracing.Client(),
 			jwt.Client(func(token *jwtv4.Token) (interface{}, error) {
@@ -71,4 +74,30 @@ func TestRpcClient(t *testing.T) {
 
 func TestGg(t *testing.T) {
 	t.Log(os.Hostname())
+}
+
+func TestHttpClient(t *testing.T) {
+	conn, err := http.NewClient(
+		context.Background(),
+		http.WithEndpoint("127.0.0.1:4466"),
+		http.WithMiddleware(
+			jwt.Client(func(token *jwtv4.Token) (interface{}, error) {
+				return []byte("testKey"), nil
+			}),
+		),
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	req, err := nhttp.NewRequest(nhttp.MethodGet, "http://127.0.0.1:4466/helloworld/479870", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	do, err := conn.Do(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer do.Body.Close()
+	body, err := io.ReadAll(do.Body)
+	t.Log(string(body))
 }

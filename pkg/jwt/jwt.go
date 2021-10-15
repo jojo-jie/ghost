@@ -111,6 +111,7 @@ func Client(keyProvider jwt.Keyfunc, opts ...Option) middleware.Middleware {
 	for _, opt := range opts {
 		opt(o)
 	}
+	fmt.Printf("=====,%v\n", keyProvider == nil)
 	return func(handler middleware.Handler) middleware.Handler {
 		return func(ctx context.Context, req interface{}) (interface{}, error) {
 			if keyProvider == nil {
