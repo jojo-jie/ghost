@@ -3,15 +3,16 @@ package service
 import (
 	"context"
 	v1 "ghost/api/helloworld/v1"
-	"ghost/pkg/jwt"
 	"ghost/pkg/track"
 	"github.com/go-kratos/etcd/registry"
 	"github.com/go-kratos/kratos/v2/middleware"
+	"github.com/go-kratos/kratos/v2/middleware/auth/jwt"
 	"github.com/go-kratos/kratos/v2/middleware/tracing"
 	"github.com/go-kratos/kratos/v2/transport/grpc"
 	"github.com/go-kratos/kratos/v2/transport/http"
 	"io"
 	nhttp "net/http"
+	"strconv"
 
 	jwtv4 "github.com/golang-jwt/jwt/v4"
 	clientv3 "go.etcd.io/etcd/client/v3"
@@ -100,4 +101,8 @@ func TestHttpClient(t *testing.T) {
 	defer do.Body.Close()
 	body, err := io.ReadAll(do.Body)
 	t.Log(string(body))
+}
+
+func TestFormatInt(t *testing.T) {
+	t.Log(strconv.FormatInt(3002604296, 35))
 }
