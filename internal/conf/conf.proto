@@ -26,6 +26,7 @@ message Server {
   string jaeger_url = 3;
   string name = 4;
   string jwt_key = 5;
+  string version = 6;
 }
 
 message Data {

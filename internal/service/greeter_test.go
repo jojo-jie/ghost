@@ -8,6 +8,8 @@ import (
 	"github.com/go-kratos/kratos/v2/middleware"
 	"github.com/go-kratos/kratos/v2/middleware/auth/jwt"
 	"github.com/go-kratos/kratos/v2/middleware/tracing"
+	"github.com/go-kratos/kratos/v2/selector/filter"
+	"github.com/go-kratos/kratos/v2/selector/random"
 	"github.com/go-kratos/kratos/v2/transport/grpc"
 	"github.com/go-kratos/kratos/v2/transport/http"
 	"io"
@@ -45,6 +47,7 @@ func TestRpcClient(t *testing.T) {
 		return
 	}
 	defer dis.Close()
+	fl := filter.Version("2.1.1")
 	endpoint := "discovery://microservices/orders"
 	opts := make([]grpc.ClientOption, 0, 3)
 	opts = append(opts, grpc.WithEndpoint(endpoint), grpc.WithDiscovery(registry.New(dis)),
@@ -53,7 +56,7 @@ func TestRpcClient(t *testing.T) {
 			jwt.Client(func(token *jwtv4.Token) (interface{}, error) {
 				return []byte("testKey"), nil
 			}),
-		)))
+		)), grpc.WithBalancerName(random.Name), grpc.WithSelectFilter(fl))
 	conn, err := grpc.DialInsecure(newCtx, opts...)
 
 	if err != nil {

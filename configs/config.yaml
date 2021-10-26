@@ -1,5 +1,6 @@
 server:
   name: orders
+  version: 2.1.1
   jwt_key: testKey
   http:
     addr: 0.0.0.0:4466

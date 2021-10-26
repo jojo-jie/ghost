@@ -77,6 +77,7 @@ func main() {
 	}
 
 	Name = bc.GetServer().GetName()
+	Version = bc.GetServer().GetVersion()
 	logger := log.With(log.NewStdLogger(os.Stdout),
 		"ts", log.DefaultTimestamp,
 		"caller", log.DefaultCaller,
