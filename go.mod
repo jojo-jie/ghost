@@ -39,6 +39,7 @@ require (
 	github.com/imdario/mergo v0.3.12 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.2 // indirect
+	github.com/spaolacci/murmur3 v1.1.0 // indirect
 	go.etcd.io/etcd/api/v3 v3.5.0-rc.1 // indirect
 	go.etcd.io/etcd/client/pkg/v3 v3.5.0-rc.1 // indirect
 	go.opentelemetry.io/contrib v0.24.0 // indirect

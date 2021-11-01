@@ -9,7 +9,7 @@ import (
 	"github.com/go-kratos/kratos/v2/middleware/auth/jwt"
 	"github.com/go-kratos/kratos/v2/middleware/tracing"
 	"github.com/go-kratos/kratos/v2/selector/filter"
-	"github.com/go-kratos/kratos/v2/selector/random"
+	"github.com/go-kratos/kratos/v2/selector/wrr"
 	"github.com/go-kratos/kratos/v2/transport/grpc"
 	"github.com/go-kratos/kratos/v2/transport/http"
 	"io"
@@ -56,7 +56,7 @@ func TestRpcClient(t *testing.T) {
 			jwt.Client(func(token *jwtv4.Token) (interface{}, error) {
 				return []byte("testKey"), nil
 			}),
-		)), grpc.WithBalancerName(random.Name), grpc.WithSelectFilter(fl))
+		)), grpc.WithBalancerName(wrr.Name), grpc.WithSelectFilter(fl))
 	conn, err := grpc.DialInsecure(newCtx, opts...)
 
 	if err != nil {
