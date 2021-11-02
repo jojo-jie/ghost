@@ -3,6 +3,7 @@ package bloom
 import (
 	"context"
 	"errors"
+	"fmt"
 	"ghost/pkg/hash"
 	"github.com/go-redis/redis/v8"
 
@@ -50,7 +51,7 @@ type (
 // elements - means how many actual elements
 // when maps = 14, formula: 0.7*(bits/maps), bits = 20*elements, the error rate is 0.000067 < 1e-4
 // for detailed error rate table, see http://pages.cs.wisc.edu/~cao/papers/summary-cache/node8.html
-func New(store *redis.Conn, key string, bits uint) *Filter {
+func New(store *redis.Client, key string, bits uint) *Filter {
 	return &Filter{
 		bits:   bits,
 		bitSet: newRedisBitSet(store, key, bits),
@@ -66,6 +67,7 @@ func (f *Filter) Add(ctx context.Context, data []byte) error {
 // Exists checks if data is in f.
 func (f *Filter) Exists(ctx context.Context, data []byte) (bool, error) {
 	locations := f.getLocations(data)
+	fmt.Println("locations", locations)
 	isSet, err := f.bitSet.check(ctx, locations)
 	if err != nil {
 		return false, err
@@ -88,12 +90,12 @@ func (f *Filter) getLocations(data []byte) []uint {
 }
 
 type redisBitSet struct {
-	store *redis.Conn
+	store *redis.Client
 	key   string
 	bits  uint
 }
 
-func newRedisBitSet(store *redis.Conn, key string, bits uint) *redisBitSet {
+func newRedisBitSet(store *redis.Client, key string, bits uint) *redisBitSet {
 	return &redisBitSet{
 		store: store,
 		key:   key,
