@@ -12,6 +12,7 @@ require (
 	github.com/jojo-jie/otelgorm v0.0.0-20210924091245-7049bd429917
 	github.com/kr/text v0.2.0 // indirect
 	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
+	github.com/spaolacci/murmur3 v1.1.0
 	go.etcd.io/etcd/client/v3 v3.5.0-rc.1
 	go.opentelemetry.io/otel v1.0.0
 	go.opentelemetry.io/otel/exporters/jaeger v1.0.0-RC3
@@ -39,7 +40,6 @@ require (
 	github.com/imdario/mergo v0.3.12 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.2 // indirect
-	github.com/spaolacci/murmur3 v1.1.0 // indirect
 	go.etcd.io/etcd/api/v3 v3.5.0-rc.1 // indirect
 	go.etcd.io/etcd/client/pkg/v3 v3.5.0-rc.1 // indirect
 	go.opentelemetry.io/contrib v0.24.0 // indirect

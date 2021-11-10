@@ -1,14 +1,15 @@
 server:
   name: orders
-  version: 2.1.0
+  version: 2.1.1
   jwt_key: testKey
   http:
     addr: 0.0.0.0:4466
     timeout: 1s
   grpc:
-    addr: 0.0.0.0:6677
+    addr: 0.0.0.0:6672
     timeout: 1s
   jaeger_url: http://localhost:14268/api/traces
+  etcd_url: 127.0.0.1:2379
 data:
   database:
     driver: mysql

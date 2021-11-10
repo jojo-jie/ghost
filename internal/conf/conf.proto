@@ -27,6 +27,7 @@ message Server {
   string name = 4;
   string jwt_key = 5;
   string version = 6;
+  string etcd_url = 7;
 }
 
 message Data {

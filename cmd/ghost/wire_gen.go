@@ -14,12 +14,14 @@ import (
 	"ghost/internal/service"
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/log"
+	"go.etcd.io/etcd/client/v3"
 )
 
 // Injectors from wire.go:
 
 // initApp init kratos application.
-func initApp(confServer *conf.Server, confData *conf.Data, logger log.Logger, string2 string) (*kratos.App, func(), error) {
+// ...interface{} init external service example etcd
+func initApp(confServer *conf.Server, confData *conf.Data, logger log.Logger, string2 string, client *clientv3.Client) (*kratos.App, func(), error) {
 	dataData, cleanup, err := data.NewData(confData, logger)
 	if err != nil {
 		return nil, nil, err
@@ -34,9 +36,8 @@ func initApp(confServer *conf.Server, confData *conf.Data, logger log.Logger, st
 		cleanup()
 		return nil, nil, err
 	}
-	app, cleanup2 := newApp(logger, httpServer, grpcServer, tracerProvider)
+	app := newApp(logger, httpServer, grpcServer, tracerProvider, client)
 	return app, func() {
-		cleanup2()
 		cleanup()
 	}, nil
 }

@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"github.com/go-kratos/kratos/v2/middleware/tracing"
 	"go.opentelemetry.io/otel/sdk/trace"
 	grpc2 "google.golang.org/grpc"
@@ -27,26 +28,17 @@ var (
 	Version string
 	// flagconf is the config flag.
 	flagconf string
+	// Client is third service client
+	Client interface{}
 
 	id, _ = os.Hostname()
 )
 
 func init() {
-	flag.StringVar(&flagconf, "conf", "../../configs", "config path, eg: -conf config.yaml")
+	flag.StringVar(&flagconf, "conf", "/Users/kirito/workspace/ghost/configs", "config path, eg: -conf config.yaml")
 }
 
-func newApp(logger log.Logger, hs *http.Server, gs *grpc.Server, provider *trace.TracerProvider) (*kratos.App, func()) {
-	client, err := clientv3.New(clientv3.Config{
-		Endpoints:   []string{"127.0.0.1:2379"},
-		DialTimeout: time.Second,
-		DialOptions: []grpc2.DialOption{grpc2.WithBlock()},
-	})
-	if err != nil {
-		panic(err)
-	}
-	cleanup := func() {
-		client.Close()
-	}
+func newApp(logger log.Logger, hs *http.Server, gs *grpc.Server, provider *trace.TracerProvider, client *clientv3.Client) *kratos.App {
 	return kratos.New(
 		kratos.ID(id),
 		kratos.Name(Name),
@@ -58,23 +50,48 @@ func newApp(logger log.Logger, hs *http.Server, gs *grpc.Server, provider *trace
 			gs,
 		),
 		kratos.Registrar(registry.New(client)),
-	), cleanup
+	)
 }
 
 func main() {
 	flag.Parse()
+	fmt.Println("====", flagconf)
 	c := config.New(
 		config.WithSource(
 			file.NewSource(flagconf),
 		),
+		/*config.WithDecoder(func(value *config.KeyValue, m map[string]interface{}) error {
+			return nil
+		}),
+		config.WithResolver(func(m map[string]interface{}) error {
+			return nil
+		}),*/
 	)
 	if err := c.Load(); err != nil {
 		panic(err)
 	}
+
 	var bc conf.Bootstrap
 	if err := c.Scan(&bc); err != nil {
 		panic(err)
 	}
+
+	c.Watch("server.jwt_key", func(key string, value config.Value) {
+		s, _ := value.String()
+		bc.Server.JwtKey = s
+	})
+
+	// etcd 初始化
+	client, err := clientv3.New(clientv3.Config{
+		Endpoints:   []string{bc.GetServer().GetEtcdUrl()},
+		DialTimeout: time.Second,
+		DialOptions: []grpc2.DialOption{grpc2.WithBlock()},
+	})
+	if err != nil {
+		panic(err)
+	}
+	Client = client
+	defer client.Close()
 
 	Name = bc.GetServer().GetName()
 	Version = bc.GetServer().GetVersion()
@@ -88,7 +105,7 @@ func main() {
 		"span_id", tracing.SpanID(),
 	)
 
-	app, cleanup, err := initApp(bc.Server, bc.Data, logger, Name)
+	app, cleanup, err := initApp(bc.Server, bc.Data, logger, Name, client)
 	if err != nil {
 		panic(err)
 	}
