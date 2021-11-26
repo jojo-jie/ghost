@@ -2,6 +2,8 @@ package service
 
 import (
 	"context"
+	"crypto/hmac"
+	"crypto/sha256"
 	v1 "ghost/api/helloworld/v1"
 	"ghost/pkg/track"
 	"github.com/go-kratos/etcd/registry"
@@ -108,4 +110,17 @@ func TestHttpClient(t *testing.T) {
 
 func TestFormatInt(t *testing.T) {
 	t.Log(strconv.FormatInt(3002604296, 35))
+}
+
+func TestHash(t *testing.T) {
+	s := `{"shop_id": 123, "code": 1, "success": 1, "extra": "shop_id 123 is authorized successfully", "data": {"more_info": "more info"}, "timestamp": 1470198856}`
+	h := hmac.New(sha256.New, []byte("lllll"))
+	h.Write([]byte(s))
+	t.Log(h.Sum(nil))
+	t.Logf("%s", string(h.Sum(nil)))
+	t.Logf("%x", h.Sum(nil))
+
+	cc := "123asdLi乐?&{[]#3@"
+	t.Log([]byte(cc))
+	t.Log([]rune(cc))
 }

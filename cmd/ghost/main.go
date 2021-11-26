@@ -1,19 +1,22 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"github.com/go-kratos/kratos/v2/middleware/tracing"
 	"go.opentelemetry.io/otel/sdk/trace"
 	grpc2 "google.golang.org/grpc"
+	"io"
 	"os"
 	"time"
 
 	"ghost/internal/conf"
+	etcdConf "github.com/go-kratos/etcd/config"
 	"github.com/go-kratos/etcd/registry"
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/config"
-	"github.com/go-kratos/kratos/v2/config/file"
+	"github.com/go-kratos/kratos/v2/encoding"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/transport/grpc"
 	"github.com/go-kratos/kratos/v2/transport/http"
@@ -35,7 +38,7 @@ var (
 )
 
 func init() {
-	flag.StringVar(&flagconf, "conf", "/Users/kirito/workspace/ghost/configs", "config path, eg: -conf config.yaml")
+	flag.StringVar(&flagconf, "conf", "/Users/kirito/workspace/ghost/configs/config.yaml", "config path, eg: -conf config.yaml")
 }
 
 func newApp(logger log.Logger, hs *http.Server, gs *grpc.Server, provider *trace.TracerProvider, client *clientv3.Client) *kratos.App {
@@ -55,15 +58,58 @@ func newApp(logger log.Logger, hs *http.Server, gs *grpc.Server, provider *trace
 
 func main() {
 	flag.Parse()
-	fmt.Println("====", flagconf)
+
+	// etcd 初始化
+	client, err := clientv3.New(clientv3.Config{
+		Endpoints:   []string{os.Getenv("ETCD_URL")},
+		DialTimeout: time.Second,
+		DialOptions: []grpc2.DialOption{grpc2.WithBlock()},
+	})
+	if err != nil {
+		panic(err)
+	}
+	Client = client
+	defer client.Close()
+	configKey := "ghost"
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	v, err := client.Get(ctx, configKey)
+	if err != nil {
+		if err == context.Canceled {
+			panic(err)
+		}
+	}
+
+	if v.Count == 0 {
+		f, err := os.Open(flagconf)
+		if err != nil {
+			panic(err)
+		}
+		all, err := io.ReadAll(f)
+		if err != nil {
+			panic(err)
+		}
+		_, err = client.Put(ctx, configKey, string(all))
+		if err != nil {
+			panic(err)
+		}
+	}
+	source, err := etcdConf.New(client, etcdConf.Path(configKey), etcdConf.Context(ctx))
+	if err != nil {
+		return
+	}
 	c := config.New(
 		config.WithSource(
-			file.NewSource(flagconf),
+			source,
 		),
-		/*config.WithDecoder(func(value *config.KeyValue, m map[string]interface{}) error {
-			return nil
+		config.WithDecoder(func(src *config.KeyValue, target map[string]interface{}) error {
+			src.Format = "yaml"
+			if codec := encoding.GetCodec(src.Format); codec != nil {
+				return codec.Unmarshal(src.Value, &target)
+			}
+			return fmt.Errorf("unsupported key: %s format: %s", src.Key, src.Format)
 		}),
-		config.WithResolver(func(m map[string]interface{}) error {
+		/*config.WithResolver(func(m map[string]interface{}) error {
 			return nil
 		}),*/
 	)
@@ -75,23 +121,6 @@ func main() {
 	if err := c.Scan(&bc); err != nil {
 		panic(err)
 	}
-
-	c.Watch("server.jwt_key", func(key string, value config.Value) {
-		s, _ := value.String()
-		bc.Server.JwtKey = s
-	})
-
-	// etcd 初始化
-	client, err := clientv3.New(clientv3.Config{
-		Endpoints:   []string{bc.GetServer().GetEtcdUrl()},
-		DialTimeout: time.Second,
-		DialOptions: []grpc2.DialOption{grpc2.WithBlock()},
-	})
-	if err != nil {
-		panic(err)
-	}
-	Client = client
-	defer client.Close()
 
 	Name = bc.GetServer().GetName()
 	Version = bc.GetServer().GetVersion()
