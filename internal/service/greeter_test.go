@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/hmac"
 	"crypto/sha256"
+	"fmt"
 	v1 "ghost/api/helloworld/v1"
 	"ghost/pkg/track"
 	"github.com/go-kratos/etcd/registry"
@@ -49,7 +50,7 @@ func TestRpcClient(t *testing.T) {
 		return
 	}
 	defer dis.Close()
-	fl := filter.Version("2.1.1")
+	wrr.WithFilter(filter.Version("2.1.1"))
 	endpoint := "discovery://microservices/orders"
 	opts := make([]grpc.ClientOption, 0, 3)
 	opts = append(opts, grpc.WithEndpoint(endpoint), grpc.WithDiscovery(registry.New(dis)),
@@ -58,7 +59,7 @@ func TestRpcClient(t *testing.T) {
 			jwt.Client(func(token *jwtv4.Token) (interface{}, error) {
 				return []byte("testKey"), nil
 			}),
-		)), grpc.WithBalancerName(wrr.Name), grpc.WithSelectFilter(fl))
+		)), grpc.WithBalancerName(wrr.Name))
 	conn, err := grpc.DialInsecure(newCtx, opts...)
 
 	if err != nil {
@@ -67,6 +68,10 @@ func TestRpcClient(t *testing.T) {
 	client := v1.NewGreeterClient(conn)
 	reply, err := client.SayHello(newCtx, &v1.HelloRequest{
 		UserId: "479870",
+	})
+
+	client.SetConfig(newCtx, &v1.ConfigStrRequest{
+		ConfigStr: "dddddd",
 	})
 	defer track.End(newCtx)
 	if err != nil {
@@ -123,4 +128,21 @@ func TestHash(t *testing.T) {
 	cc := "123asdLi乐?&{[]#3@"
 	t.Log([]byte(cc))
 	t.Log([]rune(cc))
+}
+
+func TestDR(t *testing.T) {
+	t.Log("returns", demo())
+}
+
+func demo() (ii int) {
+	defer func() {
+		ii++
+		fmt.Println("defer1", ii)
+	}()
+
+	defer func() {
+		ii++
+		fmt.Println("defer2", ii)
+	}()
+	return
 }

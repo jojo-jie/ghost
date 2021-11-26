@@ -8,8 +8,13 @@ import (
 	"ghost/internal/biz"
 	"ghost/pkg/bapi"
 	"github.com/go-kratos/kratos/v2/log"
+	clientv3 "go.etcd.io/etcd/client/v3"
+	grpc2 "google.golang.org/grpc"
 	"gorm.io/gorm"
+	"io"
+	"os"
 	"strconv"
+	"time"
 )
 
 // GreeterService is a greeter service.
@@ -69,4 +74,27 @@ func (s *GreeterService) SayHello(ctx context.Context, in *v1.HelloRequest) (*v1
 			TagList: body,
 		},
 	}, nil
+}
+
+func (s *GreeterService) SetConfig(ctx context.Context, in *v1.ConfigStrRequest) (*v1.ConfigStrReply, error) {
+	s.log.WithContext(ctx).Infof("SetConfig Received: %v", in.GetConfigStr())
+	client, err := clientv3.New(clientv3.Config{
+		Endpoints:   []string{os.Getenv("ETCD_URL")},
+		DialTimeout: time.Second,
+		DialOptions: []grpc2.DialOption{grpc2.WithBlock()},
+	})
+	defer client.Close()
+	f, err := os.Open("/Users/kirito/workspace/ghost/configs/config.yaml")
+	if err != nil {
+		panic(err)
+	}
+	all, err := io.ReadAll(f)
+	if err != nil {
+		panic(err)
+	}
+	_, err = client.Put(ctx, "ghost", string(all))
+	if err != nil {
+		return nil, err
+	}
+	return nil, nil
 }

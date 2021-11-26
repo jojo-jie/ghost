@@ -16,7 +16,7 @@
     "application/json"
   ],
   "paths": {
-    "/helloworld/{name}": {
+    "/helloworld/{userId}": {
       "get": {
         "summary": "Sends a greeting",
         "operationId": "Greeter_SayHello",
@@ -36,7 +36,7 @@
         },
         "parameters": [
           {
-            "name": "name",
+            "name": "userId",
             "in": "path",
             "required": true,
             "type": "string"
@@ -52,14 +52,11 @@
     "protobufAny": {
       "type": "object",
       "properties": {
-        "typeUrl": {
+        "@type": {
           "type": "string"
-        },
-        "value": {
-          "type": "string",
-          "format": "byte"
         }
-      }
+      },
+      "additionalProperties": {}
     },
     "rpcStatus": {
       "type": "object",
@@ -79,14 +76,101 @@
         }
       }
     },
+    "v1ConfigStrReply": {
+      "type": "object",
+      "properties": {
+        "resp": {
+          "type": "boolean"
+        }
+      }
+    },
     "v1HelloReply": {
       "type": "object",
       "properties": {
-        "message": {
+        "userId": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "nickname": {
           "type": "string"
+        },
+        "account": {
+          "type": "string"
+        },
+        "userInfo": {
+          "$ref": "#/definitions/v1UserInfo"
         }
       },
       "title": "The response message containing the greetings"
+    },
+    "v1Tag": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64"
+        },
+        "createdBy": {
+          "type": "string"
+        },
+        "modifiedBy": {
+          "type": "string"
+        },
+        "createdOn": {
+          "type": "string",
+          "format": "int64"
+        },
+        "modifiedOn": {
+          "type": "string",
+          "format": "int64"
+        },
+        "deletedOn": {
+          "type": "string",
+          "format": "int64"
+        },
+        "isDel": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "name": {
+          "type": "string"
+        },
+        "state": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "v1UserInfo": {
+      "type": "object",
+      "properties": {
+        "cid": {
+          "type": "string",
+          "format": "int64"
+        },
+        "num": {
+          "type": "string",
+          "format": "int64"
+        },
+        "oid": {
+          "type": "string"
+        },
+        "price": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "endTime": {
+          "type": "string"
+        },
+        "tagList": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1Tag"
+          }
+        }
+      }
     }
   }
 }

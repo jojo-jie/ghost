@@ -14,9 +14,12 @@ service Greeter {
   // Sends a greeting
   rpc SayHello (HelloRequest) returns (HelloReply)  {
     option (google.api.http) = {
-      get: "/helloworld/{userId}"
+      get: "/helloworld/{user_id}"
     };
   }
+
+  // Set config.yaml
+  rpc SetConfig(ConfigStrRequest) returns (ConfigStrReply) {}
 }
 
 // The request message containing the user's name.
@@ -52,6 +55,14 @@ message Tag {
   int32 is_del = 7;
   string name = 8;
   int32 state = 9;
+}
+
+message ConfigStrRequest {
+  string config_str = 1;
+}
+
+message ConfigStrReply {
+  bool resp = 1;
 }
 
 
