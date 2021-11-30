@@ -7,7 +7,6 @@ import (
 	"github.com/go-kratos/kratos/v2/middleware/tracing"
 	"go.opentelemetry.io/otel/sdk/trace"
 	grpc2 "google.golang.org/grpc"
-	"io"
 	"os"
 	"time"
 
@@ -31,14 +30,12 @@ var (
 	Version string
 	// flagconf is the config flag.
 	flagconf string
-	// Client is third service client
-	Client interface{}
 
 	id, _ = os.Hostname()
 )
 
 func init() {
-	flag.StringVar(&flagconf, "conf", "/Users/kirito/workspace/ghost/configs/config.yaml", "config path, eg: -conf config.yaml")
+	flag.StringVar(&flagconf, "conf", "/Users/kirito/workspace/ghost/configs/config.json", "config path, eg: -conf config.yaml")
 }
 
 func newApp(logger log.Logger, hs *http.Server, gs *grpc.Server, provider *trace.TracerProvider, client *clientv3.Client) *kratos.App {
@@ -68,7 +65,6 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	Client = client
 	defer client.Close()
 	configKey := "ghost"
 	ctx, cancel := context.WithCancel(context.Background())
@@ -81,11 +77,7 @@ func main() {
 	}
 
 	if v.Count == 0 {
-		f, err := os.Open(flagconf)
-		if err != nil {
-			panic(err)
-		}
-		all, err := io.ReadAll(f)
+		all, err := os.ReadFile(flagconf)
 		if err != nil {
 			panic(err)
 		}
@@ -98,26 +90,36 @@ func main() {
 	if err != nil {
 		return
 	}
+
+	var bc conf.Bootstrap
+	var app *kratos.App
+	var cleanup func()
 	c := config.New(
 		config.WithSource(
 			source,
 		),
 		config.WithDecoder(func(src *config.KeyValue, target map[string]interface{}) error {
-			src.Format = "yaml"
+			src.Format = "json"
 			if codec := encoding.GetCodec(src.Format); codec != nil {
 				return codec.Unmarshal(src.Value, &target)
 			}
 			return fmt.Errorf("unsupported key: %s format: %s", src.Key, src.Format)
 		}),
-		/*config.WithResolver(func(m map[string]interface{}) error {
+		config.WithResolver(func(m map[string]interface{}) error {
+			if codec := encoding.GetCodec("json"); codec != nil {
+				marshal, err := codec.Marshal(m)
+				if err != nil {
+					return err
+				}
+				return codec.Unmarshal(marshal, &bc)
+			}
 			return nil
-		}),*/
+		}),
 	)
 	if err := c.Load(); err != nil {
 		panic(err)
 	}
 
-	var bc conf.Bootstrap
 	if err := c.Scan(&bc); err != nil {
 		panic(err)
 	}
@@ -134,7 +136,7 @@ func main() {
 		"span_id", tracing.SpanID(),
 	)
 
-	app, cleanup, err := initApp(bc.Server, bc.Data, logger, Name, client)
+	app, cleanup, err = initApp(bc.GetServer(), bc.GetData(), logger, bc.GetServer().GetName(), client)
 	if err != nil {
 		panic(err)
 	}
