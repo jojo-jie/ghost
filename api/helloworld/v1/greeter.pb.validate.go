@@ -57,7 +57,16 @@ func (m *HelloRequest) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for UserId
+	if l := utf8.RuneCountInString(m.GetUserId()); l < 1 || l > 7 {
+		err := HelloRequestValidationError{
+			field:  "UserId",
+			reason: "value length must be between 1 and 7 runes, inclusive",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
 
 	if len(errors) > 0 {
 		return HelloRequestMultiError(errors)

@@ -4,6 +4,7 @@ go 1.17
 
 require (
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
+	github.com/envoyproxy/protoc-gen-validate v0.1.0
 	github.com/go-kratos/etcd v0.1.3
 	github.com/go-kratos/kratos/v2 v2.1.2
 	github.com/go-redis/redis/v8 v8.11.3
