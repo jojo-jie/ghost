@@ -55,7 +55,7 @@ func (s *GreeterService) SayHello(ctx context.Context, in *v1.HelloRequest) (*v1
 
 	return &v1.HelloReply{
 		UserId:  int32(data.UserId),
-		Nickname:,
+		Nickname: data.Nickname,
 		Account: data.Account,
 		UserInfo: &v1.UserInfo{
 			Cid:     d.Cid,
