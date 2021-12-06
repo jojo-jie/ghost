@@ -76,14 +76,6 @@
         }
       }
     },
-    "v1ConfigStrReply": {
-      "type": "object",
-      "properties": {
-        "resp": {
-          "type": "boolean"
-        }
-      }
-    },
     "v1HelloReply": {
       "type": "object",
       "properties": {

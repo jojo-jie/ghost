@@ -69,10 +69,6 @@ func TestRpcClient(t *testing.T) {
 	reply, err := client.SayHello(newCtx, &v1.HelloRequest{
 		UserId: "479870",
 	})
-
-	client.SetConfig(newCtx, &v1.ConfigStrRequest{
-		ConfigStr: "dddddd",
-	})
 	defer track.End(newCtx)
 	if err != nil {
 		t.Log(v1.IsContentMissing(err))
