@@ -9,6 +9,7 @@ import (
 	"github.com/go-kratos/kratos/v2/middleware"
 	"github.com/go-kratos/kratos/v2/middleware/auth/jwt"
 	"github.com/go-kratos/kratos/v2/middleware/logging"
+	"github.com/go-kratos/kratos/v2/middleware/ratelimit"
 	"github.com/go-kratos/kratos/v2/middleware/recovery"
 	"github.com/go-kratos/kratos/v2/middleware/selector"
 	"github.com/go-kratos/kratos/v2/middleware/tracing"
@@ -29,6 +30,7 @@ func NewHTTPServer(c *conf.Server, greeter *service.GreeterService, logger log.L
 					}),
 				),
 				validate.Validator(),
+				ratelimit.Server(),
 				tracing.Server(),
 				logging.Server(log.DefaultLogger),
 			),
