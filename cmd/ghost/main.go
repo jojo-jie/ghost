@@ -6,8 +6,11 @@ import (
 	"fmt"
 	"github.com/go-kratos/kratos/v2/middleware/tracing"
 	"go.opentelemetry.io/otel/sdk/trace"
+	"golang.org/x/sync/errgroup"
 	grpc2 "google.golang.org/grpc"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"ghost/internal/conf"
@@ -136,14 +139,27 @@ func main() {
 		"span_id", tracing.SpanID(),
 	)
 
-	app, cleanup, err = initApp(bc.GetServer(), bc.GetData(), logger, bc.GetServer().GetName(), client)
-	if err != nil {
-		panic(err)
-	}
-	defer cleanup()
+	var g errgroup.Group
+	g.Go(func() error {
+		ch := make(chan os.Signal, 1)
+		signal.Notify(ch, syscall.SIGUSR2)
+		<-ch
+		// 接下来就可以做热重启相关的逻辑了fork
+		return nil
+	})
 
-	// start and wait for stop signal
-	if err := app.Run(); err != nil {
+	g.Go(func() error {
+		app, cleanup, err = initApp(bc.GetServer(), bc.GetData(), logger, bc.GetServer().GetName(), client)
+		if err != nil {
+			panic(err)
+		}
+		defer cleanup()
+
+		// start and wait for stop signal
+		return app.Run()
+	})
+
+	if g.Wait() != nil {
 		panic(err)
 	}
 }

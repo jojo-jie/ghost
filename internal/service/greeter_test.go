@@ -18,6 +18,7 @@ import (
 	"io"
 	nhttp "net/http"
 	"strconv"
+	"unsafe"
 
 	jwtv4 "github.com/golang-jwt/jwt/v4"
 	clientv3 "go.etcd.io/etcd/client/v3"
@@ -141,4 +142,17 @@ func demo() (ii int) {
 		fmt.Println("defer2", ii)
 	}()
 	return
+}
+
+type W struct {
+	a, b int
+}
+
+func TestUintptr(t *testing.T) {
+	var w *W = new(W)
+	t.Log(w.a, w.b)
+
+	b := unsafe.Pointer(uintptr(unsafe.Pointer(w)) + unsafe.Offsetof(w.b))
+	*((*int)(b)) = 10
+	t.Log(w.a, w.b)
 }
