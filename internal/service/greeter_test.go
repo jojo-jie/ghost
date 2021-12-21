@@ -160,7 +160,7 @@ func TestUintptr(t *testing.T) {
 	t.Log(w.a, w.b)
 }
 
-
+// https://mp.weixin.qq.com/s/kQLAnh-frOALCDNU924zxQ
 func TestFanIn(t *testing.T) {
 	// create two sample message and stop channels
 	mc1, sc1 := generate("message from generator 1", 200*time.Millisecond)
