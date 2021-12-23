@@ -51,7 +51,7 @@ func (a *Api) httpGet(ctx context.Context, path string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	newCtx,finish:=track.Start(ctx, otel.Tracer(""), "HTTP GET: "+a.Url)
+	newCtx, finish := track.Start(ctx, otel.Tracer(""), "HTTP GET: "+a.Url)
 	finish(track.SetAttributes(path), track.InjectHttp(ctx, req))
 	req = req.WithContext(newCtx)
 	client := &http.Client{Timeout: time.Millisecond * 300}
