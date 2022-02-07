@@ -45,7 +45,7 @@ message UserInfo {
 
 message Tag {
   int64 id = 1;
-  string created_by = 2;
+  string created_by = 2 [json_name = "code"];
   string modified_by = 3;
   int64 created_on = 4;
   int64 modified_on = 5;

@@ -2,11 +2,11 @@ package service
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	v1 "ghost/api/helloworld/v1"
 	"ghost/internal/biz"
 	"ghost/pkg/bapi"
+	"github.com/go-kratos/kratos/v2/encoding"
 	"github.com/go-kratos/kratos/v2/log"
 	"gorm.io/gorm"
 	"strconv"
@@ -47,16 +47,17 @@ func (s *GreeterService) SayHello(ctx context.Context, in *v1.HelloRequest) (*v1
 		return nil, err
 	}
 
+	jsonCode := encoding.GetCodec("json")
 	var d biz.UserInfo
-	err = json.Unmarshal([]byte(data.UserInfo), &d)
+	err = jsonCode.Unmarshal([]byte(data.UserInfo), &d)
 	if err != nil {
 		return nil, v1.ErrorContentMissing("失败 %s", err)
 	}
 
 	return &v1.HelloReply{
-		UserId:  int32(data.UserId),
+		UserId:   int32(data.UserId),
 		Nickname: data.Nickname,
-		Account: data.Account,
+		Account:  data.Account,
 		UserInfo: &v1.UserInfo{
 			Cid:     d.Cid,
 			Num:     d.Num,

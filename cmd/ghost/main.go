@@ -4,10 +4,13 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"github.com/go-kratos/kratos/v2"
+	"github.com/go-kratos/kratos/v2/encoding/json"
 	"github.com/go-kratos/kratos/v2/middleware/tracing"
 	"go.opentelemetry.io/otel/sdk/trace"
 	"golang.org/x/sync/errgroup"
 	grpc2 "google.golang.org/grpc"
+	"google.golang.org/protobuf/encoding/protojson"
 	"os"
 	"os/signal"
 	"syscall"
@@ -16,7 +19,6 @@ import (
 	"ghost/internal/conf"
 	etcdConf "github.com/go-kratos/etcd/config"
 	"github.com/go-kratos/etcd/registry"
-	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/config"
 	"github.com/go-kratos/kratos/v2/encoding"
 	"github.com/go-kratos/kratos/v2/log"
@@ -39,6 +41,7 @@ var (
 
 func init() {
 	flag.StringVar(&flagconf, "conf", "/Users/kirito/workspace/ghost/configs/config.json", "config path, eg: -conf config.yaml")
+	json.MarshalOptions = protojson.MarshalOptions{UseProtoNames: true, EmitUnpopulated: true}
 }
 
 func newApp(logger log.Logger, hs *http.Server, gs *grpc.Server, provider *trace.TracerProvider, client *clientv3.Client) *kratos.App {

@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/hmac"
 	"crypto/sha256"
+	"encoding/json"
 	"fmt"
 	v1 "ghost/api/helloworld/v1"
 	"ghost/pkg/track"
@@ -18,6 +19,7 @@ import (
 	"io"
 	nhttp "net/http"
 	"os/signal"
+	"reflect"
 	"strconv"
 	"sync"
 	"syscall"
@@ -244,4 +246,15 @@ func multiplex(mcs ...chan string) (chan string, *sync.WaitGroup) {
 		}(mc, wg)
 	}
 	return mmc, wg
+}
+
+func TestCCdd(t *testing.T) {
+	jsonStr := `{"cmd":"report","model":"remote.b186acn02","sid":"158d00076be93b","params":[{"button_0":"click"}]}`
+	var cmd map[string]struct{}
+	json.Unmarshal([]byte(jsonStr), &cmd)
+	if v, ok := cmd["params"]; ok {
+		t.Log(v)
+		t.Log(reflect.TypeOf(v))
+		t.Log(reflect.ValueOf(v))
+	}
 }

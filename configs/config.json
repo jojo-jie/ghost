@@ -17,7 +17,7 @@
   "data": {
     "database": {
       "driver": "mysql",
-      "source": "root:uUiknmbGFDBIu9801827654@tcp(127.0.0.1:3307)/ghost",
+      "source": "root:uUiknmbGFDBIu9801827654@tcp(127.0.0.1:3306)/ghost",
       "set_max_idle_conns": 50,
       "set_max_open_conns": 100,
       "set_conn_max_lifetime": "3600s"
